@@ -22,7 +22,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::solve;
+    use super::solve;
 
     #[test]
     fn test_simple() {
