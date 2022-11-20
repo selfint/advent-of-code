@@ -1,8 +1,9 @@
 use std::io;
 
-use part_1::solve;
+use part_2::solve;
 
 mod part_1;
+mod part_2;
 
 fn main() {
     let input = io::stdin()
