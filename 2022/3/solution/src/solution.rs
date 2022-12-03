@@ -1,8 +1,13 @@
-pub fn solve<I>(input: I) -> usize
-where
-    I: Iterator<Item = String>,
-{
+pub fn solve(input: impl Iterator<Item = String>) -> usize {
+    solve_part_2(input)
+}
+
+fn solve_part_1(input: impl Iterator<Item = String>) -> usize {
     input.map(find_double).map(prioritize_char).sum()
+}
+
+fn solve_part_2(input: impl Iterator<Item = String>) -> usize {
+    0
 }
 
 fn find_double(input: String) -> char {
@@ -64,9 +69,16 @@ mod tests {
     }
 
     #[test]
-    fn test_example() {
-        let solution = solve(iter_input());
+    fn test_part_1() {
+        let solution = solve_part_1(iter_input());
 
         assert_eq!(solution, 157);
+    }
+
+    #[test]
+    fn test_part_2() {
+        let solution = solve_part_2(iter_input());
+
+        assert_eq!(solution, 70);
     }
 }
