@@ -7,7 +7,21 @@ fn solve_part_1(input: impl Iterator<Item = String>) -> usize {
 }
 
 fn solve_part_2(input: impl Iterator<Item = String>) -> usize {
-    0
+    let mut window = vec![];
+
+    let mut total_priority = 0;
+
+    for line in input {
+        window.push(line);
+
+        if window.len() == 3 {
+            let triple = find_triple(&window[0], &window[1], &window[2]);
+            total_priority += prioritize_char(triple);
+            window.clear();
+        }
+    }
+
+    total_priority
 }
 
 fn find_double(input: String) -> char {
@@ -20,6 +34,16 @@ fn find_double(input: String) -> char {
     }
 
     unreachable!("input did not contain a char twice")
+}
+
+fn find_triple(first: &str, second: &str, third: &str) -> char {
+    for char in first.chars() {
+        if second.contains(char) && third.contains(char) {
+            return char;
+        }
+    }
+
+    unreachable!("input did not contain a char thrice")
 }
 
 fn prioritize_char(c: char) -> usize {
@@ -66,6 +90,17 @@ mod tests {
         let actual_priorities = chars.map(prioritize_char);
 
         assert_eq!(expected_priorities, actual_priorities);
+    }
+
+    #[test]
+    fn test_find_triple() {
+        let expected_triples = ['r', 'Z'];
+        let actual_triples = [
+            find_triple(EXAMPLE_INPUT[0], EXAMPLE_INPUT[1], EXAMPLE_INPUT[1]),
+            find_triple(EXAMPLE_INPUT[3], EXAMPLE_INPUT[4], EXAMPLE_INPUT[5]),
+        ];
+
+        assert_eq!(expected_triples, actual_triples);
     }
 
     #[test]
