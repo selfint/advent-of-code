@@ -1,5 +1,5 @@
 pub fn solve(input: impl Iterator<Item = String>) -> usize {
-    solve_part_1(input)
+    solve_part_2(input)
 }
 
 fn solve_part_1(input: impl Iterator<Item = String>) -> usize {
@@ -11,7 +11,11 @@ fn solve_part_1(input: impl Iterator<Item = String>) -> usize {
 }
 
 fn solve_part_2(input: impl Iterator<Item = String>) -> usize {
-    todo!()
+    input
+        .map(|l| parse_ranges(&l))
+        .map(has_overlap)
+        .map(|r| r as usize)
+        .sum::<usize>()
 }
 
 type RangeTuple = (usize, usize);
@@ -36,6 +40,19 @@ fn is_subrange(ranges: (RangeTuple, RangeTuple)) -> bool {
     (f_start <= s_start && s_end <= f_end) || (s_start <= f_start && f_end <= s_end)
 }
 
+fn has_overlap(ranges: (RangeTuple, RangeTuple)) -> bool {
+    fn first_overlaps_second(f_start: usize, f_end: usize, s_start: usize, s_end: usize) -> bool {
+        (s_start <= f_start && f_start <= s_end) || (s_start <= f_end && f_end <= s_end)
+    }
+
+    let (first_range, second_range) = ranges;
+    let (f_start, f_end) = first_range;
+    let (s_start, s_end) = second_range;
+
+    first_overlaps_second(f_start, f_end, s_start, s_end)
+        || first_overlaps_second(s_start, s_end, f_start, f_end)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -44,7 +61,7 @@ mod tests {
         "2-4,6-8", "2-3,4-5", "5-7,7-9", "2-8,3-7", "6-6,4-6", "2-6,4-8",
     ];
     const PART_1_ANSWER: usize = 2;
-    const PART_2_ANSWER: usize = 2;
+    const PART_2_ANSWER: usize = 4;
 
     fn iter_input() -> impl Iterator<Item = String> {
         EXAMPLE_INPUT.into_iter().map(|s| s.into())
@@ -70,6 +87,15 @@ mod tests {
         let expected_results = [false, false, false, true, true, false];
 
         let actual_results = EXAMPLE_INPUT.map(parse_ranges).map(is_subrange);
+
+        assert_eq!(expected_results, actual_results);
+    }
+
+    #[test]
+    fn test_has_overlap() {
+        let expected_results = [false, false, true, true, true, true];
+
+        let actual_results = EXAMPLE_INPUT.map(parse_ranges).map(has_overlap);
 
         assert_eq!(expected_results, actual_results);
     }
