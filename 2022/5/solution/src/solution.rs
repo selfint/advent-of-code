@@ -1,5 +1,5 @@
 pub fn solve(input: impl Iterator<Item = String>) -> String {
-    solve_part_1(input)
+    solve_part_2(input)
 }
 
 fn solve_part_1(mut input: impl Iterator<Item = String>) -> String {
@@ -8,9 +8,11 @@ fn solve_part_1(mut input: impl Iterator<Item = String>) -> String {
     let mut stacks = parse_stacks(stack_input);
     let moves = parse_moves(input);
 
-    for (from, to) in moves {
-        let element = stacks[from].pop().expect("tried to pop from empty stack");
-        stacks[to].push(element);
+    for (amount, from, to) in moves {
+        for _ in 0..amount {
+            let element = stacks[from].pop().expect("tried to pop from empty stack");
+            stacks[to].push(element);
+        }
     }
 
     stacks
@@ -19,8 +21,28 @@ fn solve_part_1(mut input: impl Iterator<Item = String>) -> String {
         .collect()
 }
 
-fn solve_part_2(input: impl Iterator<Item = String>) -> String {
-    todo!()
+fn solve_part_2(mut input: impl Iterator<Item = String>) -> String {
+    let stack_input = input.by_ref().take_while(|l| !l.is_empty()).collect();
+
+    let mut stacks = parse_stacks(stack_input);
+    let moves = parse_moves(input);
+
+    for (amount, from, to) in moves {
+        let mut buffer = Vec::with_capacity(amount);
+        for _ in 0..amount {
+            let element = stacks[from].pop().expect("tried to pop from empty stack");
+            buffer.insert(0, element);
+        }
+
+        for element in buffer {
+            stacks[to].push(element);
+        }
+    }
+
+    stacks
+        .iter_mut()
+        .map(|s| s.pop().expect("empty stack"))
+        .collect()
 }
 
 fn parse_stacks(stack_input: Vec<String>) -> Vec<Vec<char>> {
@@ -53,7 +75,7 @@ fn parse_stacks(stack_input: Vec<String>) -> Vec<Vec<char>> {
     stacks
 }
 
-fn parse_moves(moves_input: impl Iterator<Item = String>) -> Vec<(usize, usize)> {
+fn parse_moves(moves_input: impl Iterator<Item = String>) -> Vec<(usize, usize, usize)> {
     let mut moves = vec![];
 
     for line in moves_input {
@@ -72,9 +94,7 @@ fn parse_moves(moves_input: impl Iterator<Item = String>) -> Vec<(usize, usize)>
         let from: usize = from.parse().unwrap();
         let to: usize = to.parse().unwrap();
 
-        for _ in 0..amount {
-            moves.push((from - 1, to - 1));
-        }
+        moves.push((amount, from - 1, to - 1));
     }
 
     moves
@@ -117,7 +137,7 @@ mod tests {
 
     #[test]
     fn test_parse_moves() {
-        let expected_moves = vec![(1, 0), (0, 2), (0, 2), (0, 2), (1, 0), (1, 0), (0, 1)];
+        let expected_moves = vec![(1, 1, 0), (3, 0, 2), (2, 1, 0), (1, 0, 1)];
         let moves_input = iter_input().skip_while(|l| !l.is_empty()).skip(1);
 
         let actual_moves = parse_moves(moves_input);
