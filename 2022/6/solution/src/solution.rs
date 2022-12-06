@@ -1,10 +1,18 @@
 use std::collections::{HashMap, VecDeque};
 
 pub fn solve(mut input: impl Iterator<Item = String>) -> usize {
-    solve_part_1(&input.next().unwrap())
+    solve_part_2(&input.next().unwrap())
 }
 
 fn solve_part_1(input: &str) -> usize {
+    find_packet_header(input, 4)
+}
+
+fn solve_part_2(input: &str) -> usize {
+    find_packet_header(input, 14)
+}
+
+fn find_packet_header(input: &str, header_size: usize) -> usize {
     let mut buffer = VecDeque::new();
     let mut seen_chars: HashMap<char, usize> = HashMap::new();
 
@@ -12,8 +20,8 @@ fn solve_part_1(input: &str) -> usize {
         buffer.push_front(char);
         *seen_chars.entry(char).or_default() += 1;
 
-        if buffer.len() == 4 {
-            if seen_chars.keys().count() == 4 {
+        if buffer.len() == header_size {
+            if seen_chars.keys().count() == buffer.len() {
                 return i + 1;
             } else {
                 let last_char = buffer.pop_back().unwrap();
@@ -28,11 +36,7 @@ fn solve_part_1(input: &str) -> usize {
         }
     }
 
-    unreachable!("input didn't contain packet header");
-}
-
-fn solve_part_2(input: &str) -> usize {
-    todo!()
+    unreachable!("packet didn't contain header");
 }
 
 #[cfg(test)]
@@ -47,7 +51,7 @@ mod tests {
         "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw",
     ];
     const PART_1_ANSWER: [usize; 5] = [7, 5, 6, 10, 11];
-    const PART_2_ANSWER: [usize; 5] = [7, 5, 6, 10, 11];
+    const PART_2_ANSWER: [usize; 5] = [19, 23, 23, 29, 26];
 
     #[test]
     fn test_part_1() {
