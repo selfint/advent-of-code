@@ -3,7 +3,7 @@ use std::collections::HashMap;
 type Solution = usize;
 
 pub fn solve(input: impl Iterator<Item = String>) -> Solution {
-    solve_part_1(input)
+    solve_part_2(input)
 }
 
 fn solve_part_1(input: impl Iterator<Item = String>) -> Solution {
@@ -58,7 +58,27 @@ fn get_dir_sizes(input: impl Iterator<Item = String>) -> HashMap<String, usize> 
 }
 
 fn solve_part_2(input: impl Iterator<Item = String>) -> Solution {
-    todo!()
+    let total_disk_space = 70000000;
+    let desired_disk_space = 30000000;
+
+    let dir_sizes = get_dir_sizes(input);
+
+    let free_disk_space = total_disk_space - dir_sizes.get("/").expect("missing '/' dir size");
+    let missing_disk_space = desired_disk_space - free_disk_space;
+
+    let mut min_dir_size = None;
+
+    for &dir_size in dir_sizes.values() {
+        if dir_size >= missing_disk_space {
+            min_dir_size = match min_dir_size {
+                None => Some(dir_size),
+                Some(min_dir_size) if dir_size < min_dir_size => Some(dir_size),
+                Some(min_dir_size) => Some(min_dir_size),
+            };
+        }
+    }
+
+    min_dir_size.expect("no dir satisfies space requirements")
 }
 
 #[cfg(test)]
@@ -91,7 +111,7 @@ mod tests {
         "7214296 k",
     ];
     const PART_1_ANSWER: usize = 95437;
-    const PART_2_ANSWER: usize = 0;
+    const PART_2_ANSWER: usize = 24933642;
 
     fn iter_input() -> impl Iterator<Item = String> {
         EXAMPLE_INPUT.into_iter().map(|s| s.into())
