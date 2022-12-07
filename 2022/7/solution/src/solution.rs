@@ -41,11 +41,9 @@ fn get_dir_sizes(input: impl Iterator<Item = String>) -> HashMap<String, usize> 
             ["$", "ls"] => {}
             ["dir", _dir_name] => {}
             [file_size, _file_name] => {
-                for full_path in path_from_root.iter().scan(vec![], |p, d| {
-                    p.push(d.to_string());
-                    Some(p.join("/"))
-                }) {
+                for i in 1..path_from_root.len() + 1 {
                     let file_size: usize = file_size.parse().expect("failed to parse file size");
+                    let full_path = path_from_root[..i].join("/");
 
                     *dir_sizes.entry(full_path).or_default() += file_size;
                 }
