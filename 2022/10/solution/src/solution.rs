@@ -1,7 +1,7 @@
 type Solution = i32;
 
 pub fn solve(input: impl Iterator<Item = String>) -> Solution {
-    solve_part_1(input)
+    solve_part_2(input)
 }
 
 fn solve_part_1(input: impl Iterator<Item = String>) -> Solution {
@@ -16,7 +16,29 @@ fn solve_part_1(input: impl Iterator<Item = String>) -> Solution {
 }
 
 fn solve_part_2(input: impl Iterator<Item = String>) -> Solution {
-    todo!()
+    let mut x_values = calc_x_values(input).into_iter();
+    x_values.next().unwrap();
+
+    let mut crt_screen = "".to_string();
+
+    for _ in 0..6 {
+        for crt_col in 0..40 {
+            let x = x_values.next().unwrap();
+            let abs_diff = x.abs_diff(crt_col);
+
+            if abs_diff <= 1 {
+                crt_screen.push('#');
+            } else {
+                crt_screen.push(' ');
+            }
+        }
+
+        crt_screen.push('\n');
+    }
+
+    println!("{crt_screen}");
+
+    0
 }
 
 fn calc_x_values(input: impl Iterator<Item = String>) -> Vec<i32> {
@@ -24,7 +46,7 @@ fn calc_x_values(input: impl Iterator<Item = String>) -> Vec<i32> {
     let mut x = 1;
     let mut change;
 
-    for (i, line) in input.enumerate() {
+    for line in input {
         x_values.push(x);
 
         let parts: Vec<_> = line.split_ascii_whitespace().collect();
@@ -70,7 +92,7 @@ mod tests {
     ];
 
     const PART_1_ANSWER: Solution = 13140;
-    const PART_2_ANSWER: Solution = 13140;
+    const PART_2_ANSWER: Solution = 0;
 
     fn iter_input() -> impl Iterator<Item = String> {
         EXAMPLE_INPUT.into_iter().map(|s| s.into())
@@ -78,7 +100,7 @@ mod tests {
 
     #[test]
     fn test_calc_x_values() {
-        let expected = vec![1, 1, 1, 4, -1];
+        let expected = vec![1, 1, 1, 1, 4, 4, -1];
         let actual = calc_x_values(["noop", "addx 3", "addx -5"].into_iter().map(|s| s.into()));
 
         assert_eq!(expected, actual, "1 failed");
