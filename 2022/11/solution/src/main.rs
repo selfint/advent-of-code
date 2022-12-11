@@ -4,7 +4,7 @@ fn main() {
     let input = io::stdin()
         .lines()
         .map(|l| l.expect("failed to get line from stdin"))
-        .take_while(|l| !l.is_empty());
+        .take_while(|l| l != "done");
 
     let solution = solve_part_1(input);
 
