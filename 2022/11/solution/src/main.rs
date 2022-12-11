@@ -1,4 +1,4 @@
-use std::io;
+use std::{collections::VecDeque, io};
 
 fn main() {
     let input = io::stdin()
@@ -17,7 +17,17 @@ fn solve_part_2(input: impl Iterator<Item = String>) -> Solution {
 }
 
 fn solve_part_1(input: impl Iterator<Item = String>) -> Solution {
-    todo!()
+    let (monkeys, mut state) = parse_input(input);
+    let mut inspections: Vec<u32> = [0].repeat(monkeys.len());
+
+    for _ in 0..20 {
+        run_round(&monkeys, &mut state, &mut inspections);
+    }
+
+    inspections.sort();
+    inspections.reverse();
+
+    inspections[0] * inspections[1]
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -50,8 +60,8 @@ fn parse_monkey(string: &str) -> (Monkey, Vec<u32>) {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Op {
-    Add(i32),
-    Mul(i32),
+    Add(u32),
+    Mul(u32),
     Square,
 }
 
@@ -69,7 +79,7 @@ impl From<(&str, &str, &str)> for Op {
     }
 }
 
-type State = Vec<Vec<u32>>;
+type State = Vec<VecDeque<u32>>;
 fn parse_input(input: impl Iterator<Item = String>) -> (Vec<Monkey>, State) {
     let input = input.collect::<Vec<String>>().join("\n");
 
@@ -78,10 +88,39 @@ fn parse_input(input: impl Iterator<Item = String>) -> (Vec<Monkey>, State) {
 
     for (monkey, items) in input.split("\n\n").map(parse_monkey) {
         monkeys.push(monkey);
-        state.push(items);
+        state.push(items.into());
     }
 
     (monkeys, state)
+}
+
+fn run_round(monkeys: &[Monkey], state: &mut State, inspections: &mut [u32]) {
+    for (index, monkey) in monkeys.iter().enumerate() {
+        while let Some(item) = state[index].pop_front() {
+            // update monkey inspection count
+            inspections[index] += 1;
+
+            // monkey op
+            let item = match monkey.op {
+                Op::Add(add) => item + add,
+                Op::Mul(mul) => item * mul,
+                Op::Square => item * item,
+            };
+
+            // relief
+            let item = (item as f32 / 3.0).floor() as u32;
+
+            // test
+            let target = if item % monkey.test_divisor == 0 {
+                monkey.true_target
+            } else {
+                monkey.false_target
+            };
+
+            // throw
+            state[target].push_back(item);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -154,11 +193,11 @@ mod tests {
                 false_target: 1,
             },
         ];
-        let expected_state = vec![
-            vec![79, 98],
-            vec![54, 65, 75, 74],
-            vec![79, 60, 97],
-            vec![74],
+        let expected_state: State = vec![
+            (vec![79, 98]).into(),
+            (vec![54, 65, 75, 74]).into(),
+            (vec![79, 60, 97]).into(),
+            (vec![74]).into(),
         ];
 
         let (actual_monkeys, actual_state) = parse_input(iter_input());
@@ -168,7 +207,105 @@ mod tests {
     }
 
     #[test]
-    fn test_run_round() {}
+    fn test_run_round() {
+        let monkeys = vec![
+            Monkey {
+                op: Op::Mul(19),
+                test_divisor: 23,
+                true_target: 2,
+                false_target: 3,
+            },
+            Monkey {
+                op: Op::Add(6),
+                test_divisor: 19,
+                true_target: 2,
+                false_target: 0,
+            },
+            Monkey {
+                op: Op::Square,
+                test_divisor: 13,
+                true_target: 1,
+                false_target: 3,
+            },
+            Monkey {
+                op: Op::Add(3),
+                test_divisor: 17,
+                true_target: 0,
+                false_target: 1,
+            },
+        ];
+
+        let mut state: State = vec![
+            (vec![79, 98]).into(),
+            (vec![54, 65, 75, 74]).into(),
+            (vec![79, 60, 97]).into(),
+            (vec![74]).into(),
+        ];
+
+        let expected_new_state: State = vec![
+            (vec![20, 23, 27, 26]).into(),
+            (vec![2080, 25, 167, 207, 401, 1046]).into(),
+            (vec![]).into(),
+            (vec![]).into(),
+        ];
+
+        let mut inspections: Vec<u32> = [0].repeat(monkeys.len());
+
+        run_round(&monkeys, &mut state, &mut inspections);
+
+        assert_eq!(expected_new_state, state);
+    }
+
+    #[test]
+    fn test_20_rounds() {
+        let monkeys = vec![
+            Monkey {
+                op: Op::Mul(19),
+                test_divisor: 23,
+                true_target: 2,
+                false_target: 3,
+            },
+            Monkey {
+                op: Op::Add(6),
+                test_divisor: 19,
+                true_target: 2,
+                false_target: 0,
+            },
+            Monkey {
+                op: Op::Square,
+                test_divisor: 13,
+                true_target: 1,
+                false_target: 3,
+            },
+            Monkey {
+                op: Op::Add(3),
+                test_divisor: 17,
+                true_target: 0,
+                false_target: 1,
+            },
+        ];
+
+        let mut state: State = vec![
+            (vec![79, 98]).into(),
+            (vec![54, 65, 75, 74]).into(),
+            (vec![79, 60, 97]).into(),
+            (vec![74]).into(),
+        ];
+
+        let expected_new_state: State = vec![
+            (vec![10, 12, 14, 26, 34]).into(),
+            (vec![245, 93, 53, 199, 115]).into(),
+            (vec![]).into(),
+            (vec![]).into(),
+        ];
+
+        let mut inspections: Vec<u32> = [0].repeat(monkeys.len());
+        for _ in 0..20 {
+            run_round(&monkeys, &mut state, &mut inspections);
+        }
+
+        assert_eq!(expected_new_state, state);
+    }
 
     #[test]
     fn test_part_1() {
