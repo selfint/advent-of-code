@@ -85,30 +85,18 @@ func main() {
 		return
 	}
 
-	maxRed, maxGreen, maxBlue := 12, 13, 14
 	sum := 0
 
 	for i, rawGame := range input {
-		gameId := i + 1
 		game, err := parseGame(rawGame)
 		if err != nil {
 			log.Printf("Failed to parse line %d '%s': %v\n", i, rawGame, err)
 			os.Exit(1)
 		}
 
-		if game.maxRed > maxRed {
-			continue
-		}
+		power := game.maxRed * game.maxBlue * game.maxGreen
 
-		if game.maxGreen > maxGreen {
-			continue
-		}
-
-		if game.maxBlue > maxBlue {
-			continue
-		}
-
-		sum += gameId
+		sum += power
 	}
 
 	fmt.Println(sum)
