@@ -2,9 +2,10 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
-	"strconv"
+	"strings"
 	"unicode"
 )
 
@@ -26,6 +27,28 @@ func getInput() ([]string, error) {
 	return lines, nil
 }
 
+func parseLiteralNumberSuffix(str string) (int, error) {
+	suffixes := [9]string{
+		"one",
+		"two",
+		"three",
+		"four",
+		"five",
+		"six",
+		"seven",
+		"eight",
+		"nine",
+	}
+
+	for i, suffix := range suffixes {
+		if strings.HasSuffix(str, suffix) {
+			return i + 1, nil
+		}
+	}
+
+	return 0, errors.New("str doesn't end with literal number")
+}
+
 func main() {
 	input, err := getInput()
 	if err != nil {
@@ -35,34 +58,43 @@ func main() {
 
 	sum := 0
 
-	for _, line := range input {
-		if len(line) == 0 {
-			continue
-		}
-
-		var first rune
-		var last rune
-
-		didFirst := false
+	for i, line := range input {
+		first, last := 0, 0
+		buffer := []rune{}
 
 		for _, char := range line {
+			buffer = append(buffer, char)
+
 			if unicode.IsDigit(char) {
-				if !didFirst {
-					first = char
-					didFirst = true
+				buffer = []rune{}
+
+				number := int(char - '0')
+				if first == 0 {
+					first = number
 				}
 
-				last = char
+				last = number
+			} else {
+				number, err := parseLiteralNumberSuffix(string(buffer))
+				if err == nil {
+					// don't reset buffer, next number could be
+					// a substring of current buffer
+
+					if first == 0 {
+						first = number
+					}
+
+					last = number
+				}
 			}
 		}
 
-		number, err := strconv.Atoi(fmt.Sprintf("%c%c", first, last))
-		if err != nil {
-			fmt.Println("Error:", err)
+		if first == 0 || last == 0 {
+			fmt.Println("Failed to get number in line:", i)
 			os.Exit(1)
 		}
 
-		sum += number
+		sum += first*10 + last
 	}
 
 	fmt.Println(sum)
