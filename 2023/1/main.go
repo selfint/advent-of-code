@@ -4,11 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
+	"unicode"
 )
 
 func getInput() ([]string, error) {
 	scanner := bufio.NewScanner(os.Stdin)
-	var lines []string
+	lines := []string{}
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -31,7 +33,37 @@ func main() {
 		return
 	}
 
+	sum := 0
+
 	for _, line := range input {
-		fmt.Println(line)
+		if len(line) == 0 {
+			continue
+		}
+
+		var first rune
+		var last rune
+
+		didFirst := false
+
+		for _, char := range line {
+			if unicode.IsDigit(char) {
+				if !didFirst {
+					first = char
+					didFirst = true
+				}
+
+				last = char
+			}
+		}
+
+		number, err := strconv.Atoi(fmt.Sprintf("%c%c", first, last))
+		if err != nil {
+			fmt.Println("Error:", err)
+			os.Exit(1)
+		}
+
+		sum += number
 	}
+
+	fmt.Println(sum)
 }
